@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { Project, Reference } from '@/lib/types'
 import { ReferenceList } from './reference-list'
 import { ReferenceForm } from './reference-form'
+import { PDFImport } from './pdf-import'
 import { CitationDialog } from './citation-dialog'
 import { ChatPanel } from './chat-panel'
 import { SearchPanel } from './search-panel'
@@ -12,9 +13,10 @@ import {
   Plus, 
   MessageSquare, 
   Search,
-  Settings,
   Trash2,
-  X
+  X,
+  FileUp,
+  ChevronDown
 } from 'lucide-react'
 import useSWR from 'swr'
 
@@ -25,6 +27,8 @@ interface ProjectViewProps {
 
 export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
   const [showAddForm, setShowAddForm] = useState(false)
+  const [showPDFImport, setShowPDFImport] = useState(false)
+  const [showAddMenu, setShowAddMenu] = useState(false)
   const [showCitation, setShowCitation] = useState(false)
   const [selectedReference, setSelectedReference] = useState<Reference | null>(null)
   const [rightPanel, setRightPanel] = useState<'chat' | 'search' | null>(null)
@@ -122,13 +126,46 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
             >
               <MessageSquare className="w-5 h-5" />
             </button>
-            <button
-              onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-            >
-              <Plus className="w-4 h-4" />
-              Add Reference
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowAddMenu(!showAddMenu)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                <Plus className="w-4 h-4" />
+                Add Reference
+                <ChevronDown className="w-3 h-3 ml-1" />
+              </button>
+              {showAddMenu && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-10" 
+                    onClick={() => setShowAddMenu(false)} 
+                  />
+                  <div className="absolute right-0 mt-1 w-48 rounded-md shadow-lg bg-card border z-20">
+                    <button
+                      onClick={() => {
+                        setShowAddForm(true)
+                        setShowAddMenu(false)
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-card-foreground hover:bg-muted transition-colors rounded-t-md"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Manual Entry
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowPDFImport(true)
+                        setShowAddMenu(false)
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-card-foreground hover:bg-muted transition-colors rounded-b-md"
+                    >
+                      <FileUp className="w-4 h-4" />
+                      Import from PDF
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
             <button
               onClick={handleDeleteProject}
               className="p-2 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
@@ -167,6 +204,9 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
       {/* Modals */}
       {showAddForm && (
         <ReferenceForm projectId={projectId} onClose={() => setShowAddForm(false)} />
+      )}
+      {showPDFImport && (
+        <PDFImport projectId={projectId} onClose={() => setShowPDFImport(false)} />
       )}
       {showCitation && selectedReference && (
         <CitationDialog
