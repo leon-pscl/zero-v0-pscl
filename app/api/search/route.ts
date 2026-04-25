@@ -1,33 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { SemanticScholarPaper } from '@/lib/types'
 
-const SEMANTIC_SCHOLAR_API = 'https://api.semanticscholar.org/graph/v1/paper/search'
+// Using OpenAlex API - it has generous rate limits (100k/day unauthenticated)
+// and provides comprehensive academic paper data
+const OPENALEX_API = 'https://api.openalex.org/works'
 
-interface SemanticScholarResponse {
-  total: number
-  offset: number
-  next?: number
-  data: Array<{
-    paperId: string
-    title: string
-    abstract?: string
-    year?: number
-    authors: Array<{ authorId: string; name: string }>
-    venue?: string
-    citationCount: number
-    externalIds?: {
-      DOI?: string
-      ArXiv?: string
+interface OpenAlexAuthor {
+  author: {
+    id: string
+    display_name: string
+  }
+}
+
+interface OpenAlexWork {
+  id: string
+  doi?: string
+  title: string
+  display_name: string
+  publication_year?: number
+  authorships: OpenAlexAuthor[]
+  primary_location?: {
+    source?: {
+      display_name?: string
     }
-    url: string
-  }>
+  }
+  cited_by_count: number
+  abstract_inverted_index?: Record<string, number[]>
+}
+
+interface OpenAlexResponse {
+  meta: {
+    count: number
+    per_page: number
+    page: number
+  }
+  results: OpenAlexWork[]
+}
+
+// Convert inverted index to readable abstract
+function invertedIndexToText(invertedIndex: Record<string, number[]> | undefined): string | null {
+  if (!invertedIndex) return null
+  
+  const words: [string, number][] = []
+  for (const [word, positions] of Object.entries(invertedIndex)) {
+    for (const pos of positions) {
+      words.push([word, pos])
+    }
+  }
+  
+  words.sort((a, b) => a[1] - b[1])
+  return words.map(w => w[0]).join(' ')
 }
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const query = searchParams.get('q')
-  const offset = searchParams.get('offset') || '0'
-  const limit = searchParams.get('limit') || '10'
+  const page = searchParams.get('page') || '1'
+  const perPage = searchParams.get('limit') || '10'
 
   if (!query) {
     return NextResponse.json(
@@ -37,29 +66,19 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const fields = [
-      'paperId',
-      'title',
-      'abstract',
-      'year',
-      'authors',
-      'venue',
-      'citationCount',
-      'externalIds',
-      'url'
-    ].join(',')
-
-    const url = new URL(SEMANTIC_SCHOLAR_API)
-    url.searchParams.set('query', query)
-    url.searchParams.set('fields', fields)
-    url.searchParams.set('offset', offset)
-    url.searchParams.set('limit', limit)
+    const url = new URL(OPENALEX_API)
+    url.searchParams.set('search', query)
+    url.searchParams.set('page', page)
+    url.searchParams.set('per_page', perPage)
+    // Request polite pool (faster responses) by providing an email
+    url.searchParams.set('mailto', 'research-hub@example.com')
+    // Sort by relevance score and citation count
+    url.searchParams.set('sort', 'relevance_score:desc')
 
     const response = await fetch(url.toString(), {
       headers: {
         'Accept': 'application/json',
       },
-      // Add a small delay to be respectful of rate limits
       signal: AbortSignal.timeout(15000)
     })
 
@@ -70,28 +89,37 @@ export async function GET(request: NextRequest) {
           { status: 429 }
         )
       }
-      throw new Error(`Semantic Scholar API returned ${response.status}`)
+      throw new Error(`OpenAlex API returned ${response.status}`)
     }
 
-    const data: SemanticScholarResponse = await response.json()
+    const data: OpenAlexResponse = await response.json()
 
-    const papers: SemanticScholarPaper[] = data.data.map(paper => ({
-      paperId: paper.paperId,
-      title: paper.title,
-      abstract: paper.abstract || null,
-      year: paper.year || null,
-      authors: paper.authors,
-      venue: paper.venue || null,
-      citationCount: paper.citationCount || 0,
-      externalIds: paper.externalIds,
-      url: paper.url || `https://www.semanticscholar.org/paper/${paper.paperId}`
-    }))
+    // Transform OpenAlex results to our paper format
+    const papers: SemanticScholarPaper[] = data.results.map(work => {
+      // Extract DOI from the full URL if present
+      const doi = work.doi?.replace('https://doi.org/', '') || undefined
+      
+      return {
+        paperId: work.id.replace('https://openalex.org/', ''),
+        title: work.display_name || work.title,
+        abstract: invertedIndexToText(work.abstract_inverted_index),
+        year: work.publication_year || null,
+        authors: work.authorships.map(a => ({
+          authorId: a.author.id,
+          name: a.author.display_name
+        })),
+        venue: work.primary_location?.source?.display_name || null,
+        citationCount: work.cited_by_count || 0,
+        externalIds: doi ? { DOI: doi } : undefined,
+        url: work.doi || work.id
+      }
+    })
 
     return NextResponse.json({
       papers,
-      total: data.total,
-      offset: parseInt(offset),
-      hasMore: data.next !== undefined
+      total: data.meta.count,
+      page: parseInt(page),
+      hasMore: data.meta.page * data.meta.per_page < data.meta.count
     })
   } catch (error) {
     console.error('Search API error:', error)

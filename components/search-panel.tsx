@@ -28,7 +28,10 @@ export function SearchPanel({ projectId }: SearchPanelProps) {
 
     try {
       const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`)
-      if (!response.ok) throw new Error('Search failed')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Search failed')
+      }
       
       const data = await response.json()
       setResults(data.papers || [])
@@ -124,7 +127,7 @@ export function SearchPanel({ projectId }: SearchPanelProps) {
             <Search className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
             <p>Search for academic papers</p>
             <p className="text-xs mt-1">
-              Powered by Semantic Scholar
+              Powered by OpenAlex
             </p>
           </div>
         )}
