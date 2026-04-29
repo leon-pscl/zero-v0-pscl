@@ -70,6 +70,7 @@ ${referenceContext}
 4. **Answer questions**: Provide information about specific papers or the collection as a whole
 5. **Suggest connections**: Point out relationships between different references
 6. **Recommend searches**: Suggest search terms for finding additional relevant papers
+7. **Provide definitions**: Explain technical terms or concepts related to the references
 
 When discussing specific references, refer to them by their title or use their number from the list above.` : 'No project is currently selected. Please ask the user to select a project to analyze their references.'}
 
