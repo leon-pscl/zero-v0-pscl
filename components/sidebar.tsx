@@ -89,8 +89,8 @@ export function Sidebar({ selectedProjectId, onSelectProject }: SidebarProps) {
           </span>
           <button
             onClick={() => setIsCreating(true)}
-            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            title="New Project"
+            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+            aria-label="Create new project"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -181,8 +181,8 @@ export function Sidebar({ selectedProjectId, onSelectProject }: SidebarProps) {
           </div>
           <button
             onClick={logout}
-            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-            title="Sign out"
+            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+            aria-label="Sign out"
           >
             <LogOut className="w-4 h-4" />
           </button>

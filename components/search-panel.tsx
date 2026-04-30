@@ -139,7 +139,7 @@ export function SearchPanel({ projectId }: SearchPanelProps) {
           return (
             <div
               key={paper.paperId}
-              className="p-3 bg-muted/50 rounded-lg border border-transparent hover:border-border transition-colors"
+              className="p-3 bg-muted/50 rounded-lg border border-transparent hover:border-border transition-colors cursor-pointer"
             >
               <h4 className="text-sm font-medium text-card-foreground leading-snug line-clamp-2">
                 {paper.title}
@@ -173,7 +173,7 @@ export function SearchPanel({ projectId }: SearchPanelProps) {
                   disabled={isAdding || isAdded}
                   className={`flex items-center gap-1 px-2 py-1 text-xs rounded ${
                     isAdded
-                      ? 'bg-green-100 text-green-700'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
                       : 'bg-primary text-primary-foreground hover:opacity-90'
                   } disabled:opacity-50`}
                 >

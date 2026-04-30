@@ -106,23 +106,23 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setRightPanel(rightPanel === 'search' ? null : 'search')}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-md transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent ${
                 rightPanel === 'search'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
-              title="Search papers"
+              aria-label="Search papers"
             >
               <Search className="w-5 h-5" />
             </button>
             <button
               onClick={() => setRightPanel(rightPanel === 'chat' ? null : 'chat')}
-              className={`p-2 rounded-md transition-colors ${
+              className={`p-2 rounded-md transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent ${
                 rightPanel === 'chat'
                   ? 'bg-primary text-primary-foreground'
                   : 'text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
-              title="AI Assistant"
+              aria-label="AI Assistant"
             >
               <MessageSquare className="w-5 h-5" />
             </button>
@@ -138,10 +138,10 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
               {showAddMenu && (
                 <>
                   <div 
-                    className="fixed inset-0 z-10" 
+                    className="fixed inset-0 z-dropdown" 
                     onClick={() => setShowAddMenu(false)} 
                   />
-                  <div className="absolute right-0 mt-1 w-48 rounded-md shadow-lg bg-card border z-20">
+                  <div className="absolute right-0 mt-1 w-48 rounded-md shadow-lg bg-card border z-dropdown">
                     <button
                       onClick={() => {
                         setShowAddForm(true)
@@ -168,8 +168,8 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
             </div>
             <button
               onClick={handleDeleteProject}
-              className="p-2 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-              title="Delete project"
+              className="p-2 rounded-md text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+              aria-label="Delete project"
             >
               <Trash2 className="w-5 h-5" />
             </button>
@@ -191,7 +191,8 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
             </h3>
             <button
               onClick={() => setRightPanel(null)}
-              className="p-1 rounded hover:bg-muted text-muted-foreground"
+              className="p-1 rounded hover:bg-muted text-muted-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-accent"
+              aria-label="Close panel"
             >
               <X className="w-4 h-4" />
             </button>

@@ -45,6 +45,18 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Z-index scale */
+.z-dropdown { z-index: 50; }
+.z-modal { z-index: 100; }
+.z-toast { z-index: 150; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-bounce {
+    animation: none;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

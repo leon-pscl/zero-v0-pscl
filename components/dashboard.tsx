@@ -32,25 +32,25 @@ export function Dashboard() {
               Select a project from the sidebar or create a new one to start managing your research references.
             </p>
             <div className="grid grid-cols-2 gap-4 max-w-lg text-left">
-              <div className="p-4 bg-card border rounded-lg">
+              <div className="p-4 bg-card border rounded-lg cursor-pointer hover:border-accent transition-colors">
                 <h3 className="font-medium text-card-foreground mb-1">Store References</h3>
                 <p className="text-sm text-muted-foreground">
                   Add papers manually or import from search results
                 </p>
               </div>
-              <div className="p-4 bg-card border rounded-lg">
+              <div className="p-4 bg-card border rounded-lg cursor-pointer hover:border-accent transition-colors">
                 <h3 className="font-medium text-card-foreground mb-1">Generate Citations</h3>
                 <p className="text-sm text-muted-foreground">
                   APA, MLA, Chicago, IEEE, Harvard, Vancouver, BibTeX
                 </p>
               </div>
-              <div className="p-4 bg-card border rounded-lg">
+              <div className="p-4 bg-card border rounded-lg cursor-pointer hover:border-accent transition-colors">
                 <h3 className="font-medium text-card-foreground mb-1">AI Insights</h3>
                 <p className="text-sm text-muted-foreground">
                   Chat with AI about your references and find gaps
                 </p>
               </div>
-              <div className="p-4 bg-card border rounded-lg">
+              <div className="p-4 bg-card border rounded-lg cursor-pointer hover:border-accent transition-colors">
                 <h3 className="font-medium text-card-foreground mb-1">Search Papers</h3>
                 <p className="text-sm text-muted-foreground">
                   Find academic papers and add them to your project
