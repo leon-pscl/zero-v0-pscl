@@ -5,10 +5,6 @@ import { createClient } from '@/lib/supabase/client'
 import type { Author } from '@/lib/types'
 import { X, Upload, FileText, Loader2, Check, AlertCircle } from 'lucide-react'
 import { mutate } from 'swr'
-import * as pdfjsLib from 'pdfjs-dist'
-
-// Set up the worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
 
 interface PDFImportProps {
   projectId: string
@@ -55,6 +51,10 @@ export function PDFImport({ projectId, onClose, initialFile }: PDFImportProps) {
     setStep('extracting')
 
     try {
+      // Dynamically import pdf.js to avoid SSR issues
+      const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      
       // Extract text from PDF
       const arrayBuffer = await selectedFile.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
