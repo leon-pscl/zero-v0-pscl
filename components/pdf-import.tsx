@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Author } from '@/lib/types'
 import { X, Upload, FileText, Loader2, Check, AlertCircle } from 'lucide-react'
@@ -13,6 +13,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.j
 interface PDFImportProps {
   projectId: string
   onClose: () => void
+  initialFile?: File | null
 }
 
 interface ExtractedMetadata {
@@ -26,7 +27,7 @@ interface ExtractedMetadata {
 
 type ImportStep = 'upload' | 'extracting' | 'review' | 'saving' | 'done' | 'error'
 
-export function PDFImport({ projectId, onClose }: PDFImportProps) {
+export function PDFImport({ projectId, onClose, initialFile }: PDFImportProps) {
   const [step, setStep] = useState<ImportStep>('upload')
   const [file, setFile] = useState<File | null>(null)
   const [extractedText, setExtractedText] = useState('')
@@ -42,10 +43,8 @@ export function PDFImport({ projectId, onClose }: PDFImportProps) {
   const [abstract, setAbstract] = useState('')
   const [doi, setDoi] = useState('')
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0]
-    if (!selectedFile) return
-
+  // Process a PDF file - extracted for reuse
+  const processFile = useCallback(async (selectedFile: File) => {
     if (selectedFile.type !== 'application/pdf') {
       setError('Please select a PDF file')
       return
@@ -102,16 +101,26 @@ export function PDFImport({ projectId, onClose }: PDFImportProps) {
       setError('Failed to extract text from PDF. Please try again or enter details manually.')
       setStep('error')
     }
+  }, [])
+
+  // Process initial file if provided (from drag & drop)
+  useEffect(() => {
+    if (initialFile) {
+      processFile(initialFile)
+    }
+  }, [initialFile, processFile])
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0]
+    if (!selectedFile) return
+    processFile(selectedFile)
   }
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     const droppedFile = e.dataTransfer.files[0]
     if (droppedFile) {
-      const fakeEvent = {
-        target: { files: [droppedFile] }
-      } as unknown as React.ChangeEvent<HTMLInputElement>
-      handleFileSelect(fakeEvent)
+      processFile(droppedFile)
     }
   }
 

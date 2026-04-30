@@ -6,6 +6,7 @@ import type { Project, Reference } from '@/lib/types'
 import { ReferenceList } from './reference-list'
 import { ReferenceForm } from './reference-form'
 import { PDFImport } from './pdf-import'
+import { FileDropZone } from './file-drop-zone'
 import { CitationDialog } from './citation-dialog'
 import { ChatPanel } from './chat-panel'
 import { SearchPanel } from './search-panel'
@@ -28,6 +29,7 @@ interface ProjectViewProps {
 export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showPDFImport, setShowPDFImport] = useState(false)
+  const [droppedFile, setDroppedFile] = useState<File | null>(null)
   const [showAddMenu, setShowAddMenu] = useState(false)
   const [showCitation, setShowCitation] = useState(false)
   const [selectedReference, setSelectedReference] = useState<Reference | null>(null)
@@ -49,6 +51,15 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
     `project-${projectId}`,
     fetcher
   )
+
+  const handleFileDrop = (files: File[]) => {
+    // Take the first PDF file
+    const pdfFile = files.find(f => f.type === 'application/pdf')
+    if (pdfFile) {
+      setDroppedFile(pdfFile)
+      setShowPDFImport(true)
+    }
+  }
 
   const handleGenerateCitation = (reference: Reference) => {
     setSelectedReference(reference)
@@ -92,7 +103,11 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
   }
 
   return (
-    <div className="flex h-full">
+    <FileDropZone 
+      onFileDrop={handleFileDrop} 
+      acceptedTypes={['application/pdf']}
+      className="flex h-full"
+    >
       {/* Main Content */}
       <div className={`flex-1 flex flex-col min-w-0 ${rightPanel ? 'border-r' : ''}`}>
         {/* Header */}
@@ -207,7 +222,14 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
         <ReferenceForm projectId={projectId} onClose={() => setShowAddForm(false)} />
       )}
       {showPDFImport && (
-        <PDFImport projectId={projectId} onClose={() => setShowPDFImport(false)} />
+        <PDFImport 
+          projectId={projectId} 
+          initialFile={droppedFile}
+          onClose={() => {
+            setShowPDFImport(false)
+            setDroppedFile(null)
+          }} 
+        />
       )}
       {showCitation && selectedReference && (
         <CitationDialog
@@ -218,6 +240,6 @@ export function ProjectView({ projectId, onProjectDeleted }: ProjectViewProps) {
           }}
         />
       )}
-    </div>
+    </FileDropZone>
   )
 }
