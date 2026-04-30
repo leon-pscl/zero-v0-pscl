@@ -46,7 +46,7 @@ Text from PDF:
 ${text}`
     })
 
-    return NextResponse.json(result.object)
+    return NextResponse.json(result.output)
   } catch (error) {
     console.error('Metadata extraction error:', error)
     return NextResponse.json(
