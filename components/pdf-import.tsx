@@ -51,13 +51,20 @@ export function PDFImport({ projectId, onClose, initialFile }: PDFImportProps) {
     setStep('extracting')
 
     try {
-      // Dynamically import pdf.js to avoid SSR issues
-      const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+      console.log('[v0] Starting PDF processing...')
+      
+      // Dynamically import pdf.js to avoid SSR issues - use Function constructor to prevent static analysis
+      const pdfjsLib = await (Function('return import("pdfjs-dist/legacy/build/pdf.mjs")')() as Promise<typeof import('pdfjs-dist')>)
+      console.log('[v0] pdfjs-dist loaded, version:', pdfjsLib.version)
+      
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
       
       // Extract text from PDF
       const arrayBuffer = await selectedFile.arrayBuffer()
+      console.log('[v0] Array buffer created, size:', arrayBuffer.byteLength)
+      
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      console.log('[v0] PDF loaded, pages:', pdf.numPages)
       
       let fullText = ''
       const maxPages = Math.min(pdf.numPages, 5) // Only extract first 5 pages for metadata
